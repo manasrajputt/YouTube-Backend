@@ -8,7 +8,7 @@ const connectDB = async ()=>{
     } catch (error) {
         console.log("Error: ",error);
         process.exit(1);
-    }nsbdmcn
+    }
 }
 
 export default connectDB;
