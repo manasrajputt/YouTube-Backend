@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from "child_process";
+import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
 // Configuration
@@ -17,8 +17,8 @@ const uploadOnCloudinary = async (localFilePath) => {
       resourse_type: "auto",
     }); 
     // file has been uploaded successfully
-    console.log("file is uploaded on clodinary ", response.url);
-
+    // console.log("file is uploaded on clodinary ", response);
+    fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {
     // remove the locally saved temporary file as the upload operation got failed
