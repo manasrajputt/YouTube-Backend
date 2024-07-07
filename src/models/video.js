@@ -15,7 +15,7 @@ const videoSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    decription: {
+    description: {
       type: String,
       required: true,
     },
@@ -33,7 +33,7 @@ const videoSchema = new mongoose.Schema(
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "USer",
+      ref: "User",
     },
   },
   { timestamps: true }
