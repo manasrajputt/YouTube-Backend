@@ -207,13 +207,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Newpassword and Confirmpassword not match");
   }
 
-  const user = await User.findById(
-    req.user?._id,
-    {
-      $set: { refreshToken: undefined },
-    },
-    { new: true }
-  );
+  const user = await User.findById(req.user?._id);
 
   const isPasswordValid = await user.isPasswordCorrect(oldPassword);
 
@@ -242,7 +236,7 @@ const updatesAccocuntDetails = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -251,11 +245,21 @@ const updatesAccocuntDetails = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select("-password");
+  )
+    .select("-password")
+    .exec(); // Execute the query to get the actual user document
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, user, "Account details updated successfully"));
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+      },
+      "Account details updated successfully"
+    )
+  );
 });
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
@@ -271,7 +275,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading on avatar");
   }
 
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -279,7 +283,9 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select("-password");
+  )
+    .select("-password")
+    .exec(); // Execute the query to get the actual user document
 
   return res
     .status(200)
@@ -299,7 +305,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading on coverImage");
   }
 
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -307,7 +313,9 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select("-password");
+  )
+    .select("-password")
+    .exec(); // Execute the query to get the actual user document
 
   return res
     .status(200)
@@ -353,7 +361,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         isSubscribed: {
           $cond: {
-            if: { $in: [req.user?._id, "subscribers.subscriber"] },
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
             then: true,
             else: false,
           },
@@ -389,7 +397,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
     {
       $match: {
-        _id: new mongoose.Types.ObjectId(req.user._id),
+        _id: new mongoose.Types.ObjectId(req.user?._id),
       },
     },
     {
@@ -426,7 +434,6 @@ const getWatchHistory = asyncHandler(async (req, res) => {
         ],
       },
     },
-    {},
   ]);
 
   return res
@@ -435,7 +442,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         user[0].watchHistory,
-        "watch story fetched successfully"
+        "watch history fetched successfully"
       )
     );
 });
