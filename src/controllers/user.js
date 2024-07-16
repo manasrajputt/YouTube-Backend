@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { deleteOnCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
@@ -69,8 +69,14 @@ const registerUser = asyncHandler(async (req, res) => {
     userName: userName.toLowerCase(),
     password,
     email,
-    avatar: avatar?.url,
-    coverImage: coverImage?.url || "",
+    avatar: {
+      public_id: avatar?.public_id,
+      url: avatar?.url,
+    },
+    coverImage: {
+      public_id: coverImage?.public_id || "",
+      url: coverImage?.url || "",
+    },
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -275,11 +281,18 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading on avatar");
   }
 
-  const user = await User.findByIdAndUpdate(
+  const user = await User.findById(req.user?._id).select("avatar");
+
+  const avatarToDelete = user.avatar.public_id;
+
+  const updateduser = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
-        avatar: avatar?.url,
+        avatar: {
+          public_id: avatar?.public_id,
+          url: avatar?.url,
+        },
       },
     },
     { new: true }
@@ -287,9 +300,12 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     .select("-password")
     .exec(); // Execute the query to get the actual user document
 
+  if (avatarToDelete && updateduser.avatar.public_id) {
+    await deleteOnCloudinary(avatarToDelete);
+  }
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "update avatar successfully"));
+    .json(new ApiResponse(200, updateduser, "update avatar successfully"));
 });
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
@@ -305,11 +321,18 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading on coverImage");
   }
 
-  const user = await User.findByIdAndUpdate(
+  const user = await User.findById(req.user?._id).select("coverImage");
+
+  const coverImageToDelete = user.coverImage.public_id;
+
+  const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
-        coverImage: coverImage?.url,
+        coverImage: {
+          public_id: coverImage?.public_id,
+          url: coverImage?.url,
+        },
       },
     },
     { new: true }
@@ -317,9 +340,12 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     .select("-password")
     .exec(); // Execute the query to get the actual user document
 
+  if (coverImageToDelete && updatedUser.coverImage.public_id) {
+    await deleteOnCloudinary(coverImageToDelete);
+  }
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "update coverImage successfully"));
+    .json(new ApiResponse(200, updatedUser, "update coverImage successfully"));
 });
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {

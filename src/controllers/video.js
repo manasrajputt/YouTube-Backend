@@ -1,10 +1,12 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { deleteOnCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose, { isValidObjectId } from "mongoose";
 import { Video } from "../models/video.js";
 import { User } from "../models/user.js";
+import { Like } from "../models/like.js";
+import { Comment } from "../models/comment.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
@@ -253,6 +255,159 @@ const getVideoById = asyncHandler(async (req, res) => {
     .join(new ApiResponse(200, video[0], "video details fetched successfully"));
 });
 
-const updateDetails = asyncHandler(async (req, res) => {});
+const updateVideo = asyncHandler(async (req, res) => {
+  const { title, description } = req.body;
+  const { videoId } = req.params;
 
-export { getAllVideos, publishVideo, getVideoById, updateDetails };
+  if (!videoId) {
+    throw new ApiError(400, "Invalid VideoId");
+  }
+
+  if (!(title && description)) {
+    throw new ApiError(400, "title and description is required");
+  }
+
+  const video = await Video.findById(videoId);
+
+  if (!video) {
+    throw new ApiError(404, "No video found");
+  }
+
+  if (video?.owner.toString() !== req.user?._id.toString()) {
+    throw new ApiError(
+      400,
+      "You can't edit this video as you are not the owner"
+    );
+  }
+
+  const thumbNailToDelete = video.thumbNail.public_id;
+  const thumbNailLocalPath = req.file?.path;
+
+  if (!thumbNailLocalPath) {
+    throw new ApiError(400, "thumbNail is required");
+  }
+
+  const thumbNail = await uploadOnCloudinary(thumbNailLocalPath);
+
+  if (!thumbNail) {
+    throw new ApiError(400, "thumbnail not found");
+  }
+
+  const updateVideo = await Video.findByIdAndUpdate(
+    videoId,
+    {
+      $set: {
+        title,
+        description,
+        thumbNail: {
+          public_id: thumbNail.public_id,
+          url: thumbNail.url,
+        },
+      },
+    },
+    { new: true }
+  );
+
+  if (!updateVideo) {
+    throw new ApiError(500, "Failed to update video please try again");
+  }
+
+  if (updateVideo) {
+    await deleteOnCloudinary(thumbNailToDelete);
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateVideo, "Video updated successfully"));
+});
+
+const deleteVideo = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  if (!videoId) {
+    throw new ApiError(400, "Invalid videoId");
+  }
+
+  const video = await Video.findById(videoId);
+
+  if (!video) {
+    throw new ApiError(404, "No video found");
+  }
+
+  if (video?.owner.toString() !== req.user?._id.toString()) {
+    throw new ApiError(
+      400,
+      "You can't delete this video as you are not the owner"
+    );
+  }
+
+  const videoDeleted = await Video.findByIdAndUpdate(video?._id);
+
+  if (!videoDeleted) {
+    throw new ApiError(400, "failed to delete video please try again");
+  }
+
+  await deleteOnCloudinary(videoDeleted.videoFile?.public_id, "video");
+  await deleteOnCloudinary(videoDeleted.thumbNail?.public_id);
+
+  await Like.deleteMany({ video: videoId });
+  await Comment.deleteMany({ video: videoId });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Video deleted successfully"));
+});
+
+const togglePublishStatus = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  if (!videoId) {
+    throw new ApiError(400, "Invalid videoId");
+  }
+
+  const video = await Video.findById(videoId);
+
+  if (!video) {
+    throw new ApiError(404, "No video found");
+  }
+
+  if (video?.owner.toString() !== req.user?._id.toString()) {
+    throw new ApiError(
+      400,
+      "You can't toggle publish status as you are not the owner"
+    );
+  }
+
+  const toggleVideoPublish = await Video.findByIdAndUpdate(
+    videoId,
+    {
+      $set: {
+        isPublished: !video?.isPublished,
+      },
+    },
+    { new: true }
+  );
+
+  if (!toggleVideoPublish) {
+    throw new ApiError(500, "failed to toggle video publish status");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { isPublished: toggleVideoPublish.isPublished },
+        "Video publish toggled successfully"
+      )
+    );
+});
+
+export {
+  getAllVideos,
+  publishVideo,
+  getVideoById,
+  updateVideo,
+  deleteVideo,
+  togglePublishStatus,
+};
