@@ -20,10 +20,12 @@ const videoSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
+      index: true,
     },
     description: {
       type: String,
       required: true,
+      index: true,
     },
     duration: {
       type: Number, // cloudinay url
@@ -46,5 +48,6 @@ const videoSchema = new mongoose.Schema(
 );
 
 videoSchema.plugin(mongooseAggregatePaginate);
+// videoSchema.index({ title: "text", description: "text" });
 
 export const Video = mongoose.model("Video", videoSchema);

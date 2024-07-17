@@ -14,13 +14,9 @@ const getAllVideos = asyncHandler(async (req, res) => {
   const pipeline = [];
   if (query) {
     pipeline.push({
-      $search: {
-        index: "search-videos",
-        text: {
-          query: query,
-          path: ["title", "description"],
-        },
-      },
+      $match: {
+        $text: { $search: query }
+      }
     });
   }
 
@@ -31,7 +27,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
     pipeline.push({
       $match: {
-        owner: new mongoose.Types.ObjectId(userId),
+        owner: new mongoose.Types.ObjectId(userId)
       },
     });
   }
@@ -51,7 +47,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
   } else {
     pipeline.push({
       $sort: {
-        created: -1,
+        createdAt: -1,
       },
     });
   }
@@ -78,7 +74,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     }
   );
 
-  const videoAggregate = await Video.aggregate(pipeline);
+  const videoAggregate = Video.aggregate(pipeline);
 
   const options = {
     page: parseInt(page, 10),
@@ -92,7 +88,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, video, "Videos fetched Successfully"));
 });
 
-const publishVideo = asyncHandler(async (res, res) => {
+const publishVideo = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
 
   if ([title, description].some((field) => field?.trim() === "")) {
@@ -110,20 +106,26 @@ const publishVideo = asyncHandler(async (res, res) => {
   }
 
   const videoFile = await uploadOnCloudinary(videoFileLocalPath);
-  const thumbNailFile = await uploadOnCloudinary(thumbNailLocalPath);
+  const thumbNail = await uploadOnCloudinary(thumbNailLocalPath);
 
   if (!videoFile) {
     throw new ApiError(400, "videoFile is required");
   }
-  if (!thumbNailFile) {
-    throw new ApiError(400, "thumbNailFile is required");
+  if (!thumbNail) {
+    throw new ApiError(400, "thumbNail is required");
   }
 
   const video = await Video.create({
     title,
     description,
-    videoFile: videoFile.url,
-    thumbNail: thumbNailFile.url,
+    videoFile: {
+      public_id: videoFile.public_id,
+      url: videoFile.url,
+    },
+    thumbNail: {
+      public_id: thumbNail.public_id,
+      url: thumbNail.url,
+    },
     duration: videoFile.duration,
     owner: req.user?._id,
     isPublished: true,

@@ -12,9 +12,13 @@ cloudinary.config({
 const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) return null;
+
+    // Determine the resource type based on the file extension
+    const resourceType = localFilePath.endsWith('.mp4') ? 'video' : 'auto';
+
     // upload the file on cloudinary
-    const response = await await cloudinary.uploader.upload(localFilePath, {
-      resourse_type: "auto",
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: resourceType,
     });
     // file has been uploaded successfully
     // console.log("file is uploaded on clodinary ", response);
