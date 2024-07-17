@@ -254,7 +254,7 @@ const getVideoById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .join(new ApiResponse(200, video[0], "video details fetched successfully"));
+    .json(new ApiResponse(200, video[0], "video details fetched successfully"));
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
@@ -343,7 +343,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     );
   }
 
-  const videoDeleted = await Video.findByIdAndUpdate(video?._id);
+  const videoDeleted = await Video.findByIdAndDelete(video?._id);
 
   if (!videoDeleted) {
     throw new ApiError(400, "failed to delete video please try again");
