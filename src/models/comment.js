@@ -5,7 +5,7 @@ const commentSchema = new mongoose.Schema(
   {
     content: {
       type: String,
-      required: [true, "content is required"],
+      required: [true, "Content is required"],
     },
     video: {
       type: mongoose.Schema.Types.ObjectId,
