@@ -49,7 +49,7 @@ const updateComment = asyncHandler(async (req, res) => {
     throw new ApiError(404, "comment not found");
   }
 
-  if (comment?.owner.toString() !== req.user?._id) {
+  if (comment?.owner.toString() !== req.user?._id.toString()) {
     throw new ApiError(400, "only comment owner can edit their comment");
   }
 
@@ -81,7 +81,7 @@ const deleteComment = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Commnet not found");
   }
 
-  if (comment?.owner.toString() !== req.user?._id) {
+  if (comment?.owner.toString() !== req.user?._id.toString()) {
     throw new ApiError(400, "only comment owner can delete their comment");
   }
 
