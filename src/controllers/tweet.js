@@ -150,7 +150,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
         },
         isLiked: {
           $cond: {
-            if: { $inc: [req.user?._id, "$likeDetails.likedBy"] },
+            if: { $in: [req.user?._id, "$likeDetails.likedBy"] },
             then: true,
             else: false,
           },
@@ -173,7 +173,9 @@ const getUserTweets = asyncHandler(async (req, res) => {
     },
   ]);
 
-  return res.status(200).json(200, tweets, "Tweets fetched successfully");
+  return res
+    .status(200)
+    .json(new ApiResponse(200, tweets, "Tweets fetched successfully"));
 });
 
 export { createTweet, updateTweet, deleteTweet, getUserTweets };

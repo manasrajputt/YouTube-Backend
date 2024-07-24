@@ -105,13 +105,13 @@ const getLikedVideos = asyncHandler(async (req, res) => {
             },
           },
           {
-            $unwind: "ownerDetails",
+            $unwind: "$ownerDetails",
           },
         ],
       },
     },
     {
-      $unwind: "likedVideo",
+      $unwind: "$likedVideo",
     },
     {
       $sort: {
@@ -145,7 +145,6 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      200,
       new ApiResponse(
         200,
         likedVidoesAggregate,
