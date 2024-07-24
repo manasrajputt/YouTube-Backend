@@ -11,22 +11,22 @@ This is a YOUTUBE project that covers almost all functionalities of YouTube and 
 - Profile management (avatar, cover image, details)
 - Watch history tracking
 
-#### Video Management:
+### Video Management:
 - Video upload and publishing
 - Video search, sorting, and pagination
 - Video editing and deletion
 - Visibility control (publish/unpublish)
 
-#### Tweet Management:
+### Tweet Management:
 - Tweet creation and publishing
 - Viewing user tweets
 - Updating and deleting tweets
 
-#### Subscription Management:
+### Subscription Management:
 - Subscribing to channels
 - Viewing subscriber and subscribed channel lists
 
-#### Playlist Management:
+### Playlist Management:
 - Creating, updating, and deleting playlists
 - Adding and removing videos from playlists
 - Viewing user playlists
