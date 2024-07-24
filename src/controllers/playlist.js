@@ -1,6 +1,6 @@
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { PlayList } from "../models/playlist.js";
 import mongoose from "mongoose";
 
@@ -194,7 +194,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     );
 });
 
-const getPlaylistId = asyncHandler(async (req, res) => {
+const getPlaylistById = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
 
   if (!playlistId) {
@@ -335,6 +335,6 @@ export {
   deletePlaylist,
   addVideoToPlaylist,
   removeVideoFromPlaylist,
-  getPlaylistId,
+  getPlaylistById,
   getUserPlaylists,
 };

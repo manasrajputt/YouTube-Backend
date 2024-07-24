@@ -28,6 +28,8 @@ import likeRouter from "./routes/like.js";
 import commentRouter from "./routes/comment.js";
 import tweetRouter from "./routes/tweet.js";
 import dashboardRouter from "./routes/dashboard.js";
+import playlistRouter from "./routes/playlist.js";
+import healthChecktRouter from "./routes/healthCheck.js";
 
 // routes declaration
 app.use("/api/v1/users", userRouter);
@@ -37,5 +39,7 @@ app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/comment", commentRouter);
 app.use("/api/v1/tweet", tweetRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
+app.use("/api/v1/playlist", playlistRouter);
+app.use("/api/v1/healthCheck", healthChecktRouter);
 
 export { app };
