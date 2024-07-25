@@ -15,7 +15,7 @@ router
 
 router
   .route("/c/:commentId")
-  .patch(updateComment)
+  .patch(verifyJWT, updateComment)
   .delete(verifyJWT, deleteComment);
 
 export default router;
