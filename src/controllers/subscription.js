@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import { Subscription } from "../models/subscription.js";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
-  const channelId = req.params;
+  const { channelId } = req.params;
 
   if (!channelId) {
     throw new ApiError(400, "Invalid channelId");
@@ -72,7 +72,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
             $addFields: {
               subscribedToSubscriber: {
                 $cond: {
-                  if: { $in: [channelId, "subscribedToSubscriber.subscriber"] },
+                  if: { $in: [channelId, "$subscribedToSubscriber.subscriber"] },
                   then: true,
                   else: false,
                 },

@@ -25,6 +25,6 @@ router
   .route("/remove/:videoId/:playlistId")
   .patch(verifyJWT, removeVideoFromPlaylist);
 
-router.route("/user/:userId").patch(verifyJWT, getUserPlaylists);
+router.route("/user/:userId").get(verifyJWT, getUserPlaylists);
 
 export default router;

@@ -2,6 +2,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { PlayList } from "../models/playlist.js";
+import { Video } from "../models/video.js";
 import mongoose from "mongoose";
 
 const createPlaylist = asyncHandler(async (req, res) => {
@@ -88,7 +89,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, "playlist updated successfully"));
+    .json(new ApiResponse(200, {}, "playlist deleted successfully"));
 });
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
@@ -99,7 +100,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
   }
 
   const playlist = await PlayList.findById(playlistId);
-  const video = await PlayList.findById(videoId);
+  const video = await Video.findById(videoId);
 
   if (!playlist) {
     throw new ApiError(404, "playlist not found");
@@ -149,7 +150,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   }
 
   const playlist = await PlayList.findById(playlistId);
-  const video = await PlayList.findById(videoId);
+  const video = await Video.findById(videoId);
 
   if (!playlist) {
     throw new ApiError(404, "playlist not found");
@@ -297,7 +298,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: "videos",
-        localField: "vidoes",
+        localField: "videos",
         foreignField: "_id",
         as: "videos",
       },
@@ -317,7 +318,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         _id: 1,
         name: 1,
         description: 1,
-        totalVideos: 1,
+        totalVideos: 1, 
         totalViews: 1,
         updatedAt: 1,
       },
